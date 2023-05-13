@@ -1,58 +1,76 @@
-import Axios from '../../AxiosInstance';
 import { Box, Button, Card, Modal, TextField } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useKeyDown } from '../../../hooks/useKeyDown';
 import CommentCard from './components/CommentCard';
+import Axios from '../../AxiosInstance';
+import GlobalContext from '../../Context/GlobalContext';
 import Cookies from 'js-cookie';
-import SnackBarMessage from '../../SnackBarMessage';
 import { AxiosError } from 'axios';
 
-const CommentModal = ({ open = false, handleClose = () => {} }) => {
+const CommentModal = ({ open = false, handleClose = () => { } }) => {
+  const { user, setStatus } = useContext(GlobalContext);
   const [textField, setTextField] = useState('');
+  const [textFieldError, settextFieldError] = useState('');
   const [comments, setComments] = useState([]);
-  const [error, setError] = useState({});
-  
-  useEffect(() => {
-    const userToken = Cookies.get('UserToken');
-    if (userToken !== undefined || userToken !== 'undefined') {
-      Axios.get('/comment', { headers: { Authorization: `Bearer ${userToken}` } }).then((res) => {
-        console.log(res.data);
-      });
-    }
-  })
+
   useKeyDown(() => {
     handleAddComment();
   }, ['Enter']);
 
+  useEffect(() => {
+    // TODO: Implement get notes by user's token
+    // 1. check if user is logged in
+    const userToken = Cookies.get('UserToken');
+    if (userToken !== undefined && userToken !== 'undefined') {
+      // 2. call API to get notes
+      Axios.get('/comment', { headers: { Authorization: `Bearer ${userToken}` } }).then((res) => {
+        // 3. set notes to state
+        setComments(res.data.data.map((el) => { return { id: el.id, msg: el.text } }));
+      });
+    }
+  }, [user]);
+
   const handleAddComment = async () => {
     // TODO implement logic
-    if (!validateForm())  return;
+    if (!validateForm()) return;
     try {
       const userToken = Cookies.get('UserToken');
-      const response = await Axios.post('/comment', textField, {
-        headers: {Authorization: `Bearer ${userToken}`}
+      const response = await Axios.post('/comment',
+        { text: textField }, {
+        headers: { Authorization: `Bearer ${userToken}` },
       });
       if (response.data.success) {
-        SnackBarMessage({message: 'Create comment successfully', severity: 'success'});
-        setComments([...comments, { id: Math.random(), msg: textField }]);
+        setStatus({ severity: 'success', msg: 'Create comment successfully' });
+        setComments((comments) => [...comments, { id: response.data.data.id, msg: textField }]);
+        setTextField('');
       }
-    } catch (error) {
-      console.error(error);
-      // if (error instanceof AxiosError && error.response) {
-      //   SnackBarMessage({message: error.response.data.error, severity: 'error'});
-      // } else {
-      //   SnackBarMessage({message: error.message, severity: 'error'});
-      // }
+    } catch (e) {
+      setTextField('');
+      // check if e are AxiosError
+      if (e instanceof AxiosError)
+        if (e.response)
+          // check if e.response exist
+          return setStatus({
+            msg: e.response.data.error,
+            severity: 'error',
+          });
+      // if e is not AxiosError or response doesn't exist, return error message
+      return setStatus({
+        msg: e.message,
+        severity: 'error',
+      });
     }
+    // setComments([...comments, { id: Math.random(), msg: textField }]);
   };
 
   const validateForm = () => {
-    const error = '';
-    if (!textField) error = 'Comment is required';
-    setError(error);
-
-    if(Object.keys(error).length) return false;
-    return true;
+    let isValid = true;
+    //check user
+    if (!textField) {
+      settextFieldError('Comment is required');
+      isValid = false;
+    }
+    return isValid;
   }
 
   return (
@@ -80,6 +98,8 @@ const CommentModal = ({ open = false, handleClose = () => {} }) => {
             value={textField}
             onChange={(e) => setTextField(e.target.value)}
             fullWidth
+            error={textFieldError !== ''}
+            helperText={textFieldError}
             placeholder="Type your comment"
             variant="standard"
           />
@@ -99,7 +119,7 @@ const CommentModal = ({ open = false, handleClose = () => {} }) => {
           }}
         >
           {comments.map((comment) => (
-            <CommentCard comment={comment} key={comment.id} />
+            <CommentCard comment={comment} key={comment.id} setComments={setComments}/>
           ))}
         </Box>
       </Card>

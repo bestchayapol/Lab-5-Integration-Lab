@@ -1,16 +1,16 @@
-import Axios from '../AxiosInstance';
 import React, { useEffect } from 'react';
 import { Box, Stack, Typography } from '@mui/material';
 import CustomButton from './CustomButton';
 import UserContext from '../Context/GlobalContext';
 import Cookies from 'js-cookie';
+import Axios from '../AxiosInstance';
 
-const Navbar = ({ handleOpen = () => {}, user, setUser = () => {} }) => {
+const Navbar = ({ handleOpen = () => { }, user, setUser = () => { } }) => {
   useEffect(() => {
     // TODO: Implement get user
-    const userToken = Cookies.get('UserToken');
     // 1. check if cookie is set
-    if (userToken == null || userToken == 'undefined')  return;
+    const userToken = Cookies.get('UserToken');
+    if (userToken == null || userToken == 'undefined') return;
     // 2. send a request to server
     Axios.get('/me', {
       headers: {

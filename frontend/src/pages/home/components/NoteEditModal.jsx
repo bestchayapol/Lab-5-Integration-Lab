@@ -1,11 +1,11 @@
-import Axios from '../../../share/AxiosInstance';
 import { useEffect, useState, useContext } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField } from '@mui/material';
 import GlobalContext from '../../../share/Context/GlobalContext';
 import { AxiosError } from 'axios';
 import Cookies from 'js-cookie';
+import Axios from '../../../share/AxiosInstance';
 
-const NoteEditModal = ({ note = {}, open = false, handleClose = () => {}, setNotes = () => {} }) => {
+const NoteEditModal = ({ note = {}, open = false, handleClose = () => { }, setNotes = () => { } }) => {
   const [newNote, setNewNote] = useState(note);
   const [error, setError] = useState({});
   const { setStatus } = useContext(GlobalContext);
@@ -17,7 +17,7 @@ const NoteEditModal = ({ note = {}, open = false, handleClose = () => {}, setNot
   const submit = async () => {
     // TODO: Implement update note
     // 1. validate form
-    if (!validateForm())  return;
+    if (!validateForm()) return;
     try {
       // 2. call API to update note
       const userToken = Cookies.get('UserToken');
@@ -29,22 +29,22 @@ const NoteEditModal = ({ note = {}, open = false, handleClose = () => {}, setNot
           noteId: newNote.id,
         },
         {
-          headers: {Authorization: `Bearer ${userToken}`},
+          headers: { Authorization: `Bearer ${userToken}` },
         }
       );
       // 3. if successful, update note in state and close modal
       if (response.data.success) {
-        setStatus({severity: 'success', msg: 'Update note successfully'});
-        setNotes((prev) => prev.map((n) => (n.id === newNote.id ? 
+        setStatus({ severity: 'success', msg: 'Update note successfully' });
+        setNotes((prev) => prev.map((n) => (n.id === newNote.id ?
           response.data.data : n)));
         resetAndClose();
-      } 
+      }
     } catch (error) {
-      // 4. if create note failed, check if error is from calling API or not
+      // 4. if update note failed, check if error is from calling API or not
       if (error instanceof AxiosError && error.response) {
-        setStatus({severity: 'error', msg: error.response.data.error});
+        setStatus({ severity: 'error', msg: error.response.data.error });
       } else {
-        setStatus({severity: 'error', msg: error.message});
+        setStatus({ severity: 'error', msg: error.message });
       }
     }
   };
@@ -54,8 +54,7 @@ const NoteEditModal = ({ note = {}, open = false, handleClose = () => {}, setNot
     if (!newNote.title) error.title = 'Title is required';
     if (!newNote.description) error.description = 'Description is required';
     setError(error);
-
-    if (Object.keys(error).length)  return false;
+    if (Object.keys(error).length) return false;
     return true;
   }
 

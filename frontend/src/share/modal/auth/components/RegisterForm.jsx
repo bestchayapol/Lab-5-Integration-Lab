@@ -1,9 +1,8 @@
-import Axios from '../../../AxiosInstance';
 import { Box, Link, TextField, Typography } from '@mui/material';
-import { AxiosError } from 'axios';
 import React, { useContext, useState } from 'react';
+import Axios from "../../../AxiosInstance"
 
-const RegisterForm = ({ setIsLogin = () => {}, setStatus = () => {} }) => {
+const RegisterForm = ({ setIsLogin = () => { }, setStatus = () => { } }) => {
   const [username, setUsername] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [email, setEmail] = useState('');
@@ -16,20 +15,21 @@ const RegisterForm = ({ setIsLogin = () => {}, setStatus = () => {} }) => {
   const handleSubmit = async () => {
     // TODO: Implement login
     // 1. validate form
-    if (!validateForm())  return;
+    if (!validateForm()) return;
+    // 4. if fail, show error message alert, and reset password fields
     try {
       // 2. send request to server
       const response = await Axios.post('/register', {
         username,
         email,
-        password,
+        password
       });
       // 3. if successful, change modal to login mode
       if (response.data.success) {
         setIsLogin(true);
         setStatus({
           msg: response.data.msg,
-          severity: 'success',
+          severity: 'success'
         });
       }
     } catch (e) {
@@ -44,7 +44,8 @@ const RegisterForm = ({ setIsLogin = () => {}, setStatus = () => {} }) => {
             msg: e.response.data.error,
             severity: 'error',
           });
-      // if e is not AxiosError or response doesn't exist, return error message
+      // if e is not AxiosError or response doesn't exist, return error
+      message
       return setStatus({
         msg: e.message,
         severity: 'error',
@@ -53,38 +54,36 @@ const RegisterForm = ({ setIsLogin = () => {}, setStatus = () => {} }) => {
   };
 
   const validateForm = () => {
-      let isValid = true;
-      // check user
-      if (!username) {
-        setUsernameError('Username is required');
-        isValid = false;
-      }
-      // check email
-      if (!email) {
-        setEmailError('Email is required');
-        isValid = false;
-      }
-      if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(email)) {
-        setEmailError('Invalid email format');
-        isValid = false;
-      }
-      // check password
-      if (!password) {
-        setPasswordError('Password is required');
-        isValid = false;
-      }
-      if (!rePassword) {
-        setRePasswordError('Confirm password is required');
-      }
-      if (password != rePassword) {
-        setPasswordError('Password is not match');
-        setRePassword('');
-        setPassword('');
-        isValid = false;
-      }
-
-      return isValid;
-  };
+    let isValid = true;
+    //check user
+    if (!username) {
+      setUsernameError('Username is required');
+      isValid = false;
+    }
+    //check email
+    if (!email) {
+      setEmailError('Email is required');
+      isValid = false;
+    }
+    if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(email)) {
+      setEmailError('Invalid email format');
+      isValid = false;
+    }
+    if (!password) {
+      setPasswordError('Password is required');
+      isValid = false;
+    }
+    if (!rePassword) {
+      setRePasswordError('Confirm password is required');
+    }
+    if (password !== rePassword) {
+      setPasswordError('Password is not match');
+      setRePassword('');
+      setPassword('');
+      isValid = false;
+    }
+    return isValid;
+  }
 
   return (
     <Box

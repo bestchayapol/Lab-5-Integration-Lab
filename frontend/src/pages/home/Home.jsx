@@ -1,4 +1,3 @@
-import Axios from '../../share/AxiosInstance';
 import { useEffect, useState, useContext } from 'react';
 import { Stack, Container, Typography, Grid } from '@mui/material';
 import CustomButton from '../../share/components/CustomButton';
@@ -8,6 +7,7 @@ import NoteCreateModal from './components/NoteCreateModal';
 import NoteEditModal from './components/NoteEditModal';
 import GlobalContext from '../../share/Context/GlobalContext';
 import Cookies from 'js-cookie';
+import Axios from '../../share/AxiosInstance';
 
 const Home = () => {
   const { user, setStatus } = useContext(GlobalContext);
@@ -81,23 +81,21 @@ const Home = () => {
     try {
       // 1. call API to delete note
       const userToken = Cookies.get('UserToken');
-      const response = await Axios.delete(`/note/${targetNote.id}`,
-        {
-          headers: {Authorization: `Bearer ${userToken}`},
-        }
-      );
+      const response = await Axios.delete(`/note/${targetNote.id}`, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
       // 2. if successful, set status and remove note from state
       if (response.data.success) {
-        setStatus({severity: 'success', msg: 'Delete note successfully'});
+        setStatus({ severity: 'success', msg: 'Delete note successfully' });
         setNotes(notes.filter((n) => n.id !== targetNote.id));
         handleNoteDetailClose();
-      } 
+      }
     } catch (error) {
       // 3. if delete note failed, check if error is from calling API or not
       if (error instanceof AxiosError && error.response) {
-        setStatus({severity: 'error', msg: error.response.data.error});
+        setStatus({ severity: 'error', msg: error.response.data.error });
       } else {
-        setStatus({severity: 'error', msg: error.message});
+        setStatus({ severity: 'error', msg: error.message });
       }
     }
   };
